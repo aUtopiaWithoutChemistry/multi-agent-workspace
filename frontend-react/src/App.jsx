@@ -80,6 +80,22 @@ function TaskCard({ task, onClick, selected, onSelect }) {
     onSelect(task.id)
   }
 
+  // Determine display text for assignee
+  const getAssigneeDisplay = () => {
+    if (task.claimed_by) {
+      return `Working: ${task.claimed_by}`
+    }
+    return '⏳ Available'
+  }
+
+  // Get creator display
+  const getCreatorDisplay = () => {
+    if (task.created_by && task.created_by !== 'human') {
+      return `Created: ${task.created_by}`
+    }
+    return null
+  }
+
   return (
     <div className={`task-card ${task.status}`} onClick={() => onClick(task)}>
       <div className="task-card-header">
@@ -97,9 +113,14 @@ function TaskCard({ task, onClick, selected, onSelect }) {
       </div>
       <div className="task-title">{task.title}</div>
       <div className="task-meta">
-        <span className="task-assignee">
-          {task.claimed_by ? `👤 ${task.claimed_by}` : '⏳ Available'}
-        </span>
+        <div className="task-meta-left">
+          {getCreatorDisplay() && (
+            <span className="task-creator">{getCreatorDisplay()}</span>
+          )}
+          <span className="task-assignee">
+            {task.claimed_by ? `👤 ${task.claimed_by}` : '⏳ Available'}
+          </span>
+        </div>
         <span>{task.progress || 0}%</span>
       </div>
       {task.progress > 0 && (
