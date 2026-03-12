@@ -1,0 +1,450 @@
+[
+  {
+    "id": "a39c1cbd-61fc-4d57-b1c5-64d5d7910333",
+    "action": "agent_added",
+    "details": {
+      "agent_id": "main"
+    },
+    "timestamp": "2026-03-12T12:54:07.156633"
+  },
+  {
+    "id": "9b67becb-24fd-4460-a453-e8c0af17b4ad",
+    "action": "task_created",
+    "details": {
+      "task_id": "ee53ca7a",
+      "title": "Test Final 2",
+      "type": "code"
+    },
+    "timestamp": "2026-03-12T12:35:18.875992"
+  },
+  {
+    "id": "f0ac79d7-efd0-423f-a2e6-cd04d85a1aef",
+    "action": "task_created",
+    "details": {
+      "task_id": "f28effc4",
+      "title": "Test Final 1",
+      "type": "code"
+    },
+    "timestamp": "2026-03-12T12:35:18.789670"
+  },
+  {
+    "id": "4614e31f-d6ca-4ae6-bf75-23af33a9ddf5",
+    "action": "task_claimed",
+    "details": {
+      "task_id": "9d5248e8",
+      "agent_id": "oscar",
+      "title": "Test 2"
+    },
+    "timestamp": "2026-03-12T12:34:44.606171"
+  },
+  {
+    "id": "0f4d7d03-dc16-4dd7-abb2-a60292439112",
+    "action": "task_claimed",
+    "details": {
+      "task_id": "01ce36dc",
+      "agent_id": "oscar",
+      "title": "Test 1"
+    },
+    "timestamp": "2026-03-12T12:34:44.589381"
+  },
+  {
+    "id": "cb4f66e1-1b66-4fc6-950b-fbabff15f64e",
+    "action": "task_created",
+    "details": {
+      "task_id": "9d5248e8",
+      "title": "Test 2",
+      "type": "code"
+    },
+    "timestamp": "2026-03-12T12:34:44.487289"
+  },
+  {
+    "id": "c12f6656-82c9-47f0-81ee-bf187e075b31",
+    "action": "task_created",
+    "details": {
+      "task_id": "01ce36dc",
+      "title": "Test 1",
+      "type": "code"
+    },
+    "timestamp": "2026-03-12T12:34:44.382337"
+  },
+  {
+    "id": "9996c427-17e4-49b0-9911-772ffb0ef81b",
+    "action": "task_released",
+    "details": {
+      "task_id": "17d6b72c",
+      "previous_agent": "oscar",
+      "title": "Test: Constraint"
+    },
+    "timestamp": "2026-03-12T12:34:26.093189"
+  },
+  {
+    "id": "f1d1c062-6b41-46e6-9c9f-0ad4103eecba",
+    "action": "task_claimed",
+    "details": {
+      "task_id": "17d6b72c",
+      "agent_id": "oscar",
+      "title": "Test: Constraint"
+    },
+    "timestamp": "2026-03-12T12:34:25.996077"
+  },
+  {
+    "id": "922eadda-7aec-4bb7-890c-072e199a7599",
+    "action": "task_created",
+    "details": {
+      "task_id": "17d6b72c",
+      "title": "Test: Constraint",
+      "type": "code"
+    },
+    "timestamp": "2026-03-12T12:34:25.857254"
+  },
+  {
+    "id": "293dd943-2cf8-4d95-a026-b02a688e6b7e",
+    "action": "task_claimed",
+    "details": {
+      "task_id": "840ea530",
+      "agent_id": "oscar",
+      "title": "Subtask 1"
+    },
+    "timestamp": "2026-03-12T12:34:15.610767"
+  },
+  {
+    "id": "db5694eb-78d7-4337-a6ce-5f3b352eca1d",
+    "action": "task_completed",
+    "details": {
+      "task_id": "e74c8033",
+      "agent_id": "oscar",
+      "title": "Spec: Final Test",
+      "subtasks_created": [
+        {
+          "title": "Subtask 1",
+          "type": "code"
+        }
+      ],
+      "review_created": false
+    },
+    "timestamp": "2026-03-12T12:26:20.044917"
+  },
+  {
+    "id": "32a9acd5-87f4-43fb-acb1-1fcc549b0f6f",
+    "action": "spec_decomposed",
+    "details": {
+      "task_id": "e74c8033",
+      "agent_id": "oscar",
+      "subtask_count": 1
+    },
+    "timestamp": "2026-03-12T12:26:20.044179"
+  },
+  {
+    "id": "6680a662-4583-4190-b69f-6b83223737c0",
+    "action": "task_claimed",
+    "details": {
+      "task_id": "e74c8033",
+      "agent_id": "oscar",
+      "title": "Spec: Final Test"
+    },
+    "timestamp": "2026-03-12T12:26:20.035001"
+  },
+  {
+    "id": "ac6dbb12-63d1-438d-9c3b-0e50618b7f69",
+    "action": "task_created",
+    "details": {
+      "task_id": "e74c8033",
+      "title": "Spec: Final Test",
+      "type": "spec"
+    },
+    "timestamp": "2026-03-12T12:26:19.935556"
+  },
+  {
+    "id": "eb769557-9825-4622-8955-b4afa2163938",
+    "action": "task_completed",
+    "details": {
+      "task_id": "9ded8c14",
+      "agent_id": "oscar",
+      "title": "Spec: Debug3",
+      "review_created": true
+    },
+    "timestamp": "2026-03-12T12:25:56.562793"
+  },
+  {
+    "id": "efaa0ebf-a967-4e21-9ea6-f6802df5dbdc",
+    "action": "task_claimed",
+    "details": {
+      "task_id": "9ded8c14",
+      "agent_id": "oscar",
+      "title": "Spec: Debug3"
+    },
+    "timestamp": "2026-03-12T12:25:56.552630"
+  },
+  {
+    "id": "bc382b92-9224-47f9-822d-df95bc437d48",
+    "action": "task_created",
+    "details": {
+      "task_id": "9ded8c14",
+      "title": "Spec: Debug3",
+      "type": "spec"
+    },
+    "timestamp": "2026-03-12T12:25:56.441218"
+  },
+  {
+    "id": "bafc1479-9f4d-4cbe-a8d8-27f697b703d2",
+    "action": "task_completed",
+    "details": {
+      "task_id": "98eeed9c",
+      "agent_id": "oscar",
+      "title": "Spec: Debug2",
+      "review_created": true
+    },
+    "timestamp": "2026-03-12T12:25:37.150514"
+  },
+  {
+    "id": "4099ba0f-de2a-43f3-879e-368b41e43707",
+    "action": "task_claimed",
+    "details": {
+      "task_id": "98eeed9c",
+      "agent_id": "oscar",
+      "title": "Spec: Debug2"
+    },
+    "timestamp": "2026-03-12T12:25:37.141704"
+  },
+  {
+    "id": "63f5c1ae-3d46-4704-96a5-a5529db20287",
+    "action": "task_created",
+    "details": {
+      "task_id": "98eeed9c",
+      "title": "Spec: Debug2",
+      "type": "spec"
+    },
+    "timestamp": "2026-03-12T12:25:37.054430"
+  },
+  {
+    "id": "575b6999-1edf-40c2-9685-d201686c61d1",
+    "action": "task_completed",
+    "details": {
+      "task_id": "05d236a4",
+      "agent_id": "oscar",
+      "title": "Spec: Subtask Test",
+      "review_created": true
+    },
+    "timestamp": "2026-03-12T12:24:57.512836"
+  },
+  {
+    "id": "3f99a2e1-13b7-4e58-9380-a6a899bdf66d",
+    "action": "task_claimed",
+    "details": {
+      "task_id": "05d236a4",
+      "agent_id": "oscar",
+      "title": "Spec: Subtask Test"
+    },
+    "timestamp": "2026-03-12T12:24:57.504385"
+  },
+  {
+    "id": "8a586328-03d5-442f-92fb-4ba280cf3e26",
+    "action": "task_created",
+    "details": {
+      "task_id": "05d236a4",
+      "title": "Spec: Subtask Test",
+      "type": "spec"
+    },
+    "timestamp": "2026-03-12T12:24:57.417706"
+  },
+  {
+    "id": "23f9c739-8d64-4fd4-93b1-8b142255caa5",
+    "action": "task_completed",
+    "details": {
+      "task_id": "152025d1",
+      "agent_id": "oscar",
+      "title": "Spec: Debug Test",
+      "review_created": true
+    },
+    "timestamp": "2026-03-12T12:24:12.947707"
+  },
+  {
+    "id": "9398d5e1-ec4a-41c4-a965-0b2ce59611fb",
+    "action": "task_claimed",
+    "details": {
+      "task_id": "152025d1",
+      "agent_id": "oscar",
+      "title": "Spec: Debug Test"
+    },
+    "timestamp": "2026-03-12T12:24:12.790397"
+  },
+  {
+    "id": "44feaaab-15c9-4974-87f5-417709d2e8bf",
+    "action": "task_created",
+    "details": {
+      "task_id": "152025d1",
+      "title": "Spec: Debug Test",
+      "type": "spec"
+    },
+    "timestamp": "2026-03-12T12:24:12.690531"
+  },
+  {
+    "id": "fa6b15ce-6d2c-4091-8fca-b5e5fa987657",
+    "action": "task_claimed",
+    "details": {
+      "task_id": "3c974c2a",
+      "agent_id": "oscar",
+      "title": "Spec: Debug Test"
+    },
+    "timestamp": "2026-03-12T12:24:02.930516"
+  },
+  {
+    "id": "24525d9c-34de-4144-933e-c001cdb77ead",
+    "action": "task_created",
+    "details": {
+      "task_id": "3c974c2a",
+      "title": "Spec: Debug Test",
+      "type": "spec"
+    },
+    "timestamp": "2026-03-12T12:24:02.832763"
+  },
+  {
+    "id": "a7c9c035-48bb-4a76-a83c-3cb2bc149496",
+    "action": "task_completed",
+    "details": {
+      "task_id": "a184bb0a",
+      "agent_id": "oscar",
+      "title": "Spec: New Feature",
+      "review_created": true
+    },
+    "timestamp": "2026-03-12T12:23:26.451523"
+  },
+  {
+    "id": "b4f75324-b87b-4e8b-80f0-ef6f54e20de7",
+    "action": "task_completed",
+    "details": {
+      "task_id": "a184bb0a",
+      "agent_id": "oscar",
+      "title": "Spec: New Feature",
+      "review_created": true
+    },
+    "timestamp": "2026-03-12T12:23:10.453468"
+  },
+  {
+    "id": "46d605b4-a383-46a3-9913-9f24e8c2f9cf",
+    "action": "task_claimed",
+    "details": {
+      "task_id": "a184bb0a",
+      "agent_id": "oscar",
+      "title": "Spec: New Feature"
+    },
+    "timestamp": "2026-03-12T12:23:10.369705"
+  },
+  {
+    "id": "2f25fc5f-fb5c-4b0e-a76d-3b60ecf62a9d",
+    "action": "task_created",
+    "details": {
+      "task_id": "a184bb0a",
+      "title": "Spec: New Feature",
+      "type": "spec"
+    },
+    "timestamp": "2026-03-12T12:22:29.143962"
+  },
+  {
+    "id": "6df3e5ec-ee34-4279-84f1-d0cf1965b4e9",
+    "action": "task_completed",
+    "details": {
+      "task_id": "221c1fdb",
+      "agent_id": "oscar",
+      "title": "Spec: Test Feature",
+      "review_created": true
+    },
+    "timestamp": "2026-03-12T12:21:37.340160"
+  },
+  {
+    "id": "1f2097d1-1641-4b4e-a47d-e1ec1b242d5e",
+    "action": "task_claimed",
+    "details": {
+      "task_id": "221c1fdb",
+      "agent_id": "oscar",
+      "title": "Spec: Test Feature"
+    },
+    "timestamp": "2026-03-12T12:21:37.255068"
+  },
+  {
+    "id": "1adb4416-fec3-4ea7-a60e-cf50cd5dfb6f",
+    "action": "task_created",
+    "details": {
+      "task_id": "221c1fdb",
+      "title": "Spec: Test Feature",
+      "type": "spec"
+    },
+    "timestamp": "2026-03-12T12:21:27.755382"
+  },
+  {
+    "id": "45d7f867-b26d-4a9d-9686-f0d0e8b5045b",
+    "action": "task_claimed",
+    "details": {
+      "task_id": "dcd9fed5",
+      "agent_id": "oscar",
+      "title": "Review: Spec: implementation_plan.md"
+    },
+    "timestamp": "2026-03-12T12:21:16.505346"
+  },
+  {
+    "id": "68d2fecb-14ae-4366-8013-3a61fabddcf3",
+    "action": "task_completed",
+    "details": {
+      "task_id": "2f67d845",
+      "agent_id": "main",
+      "title": "Spec: implementation_plan.md",
+      "review_created": true
+    },
+    "timestamp": "2026-03-12T11:33:04.950469"
+  },
+  {
+    "id": "abb68dcf-76ab-4a06-a020-0984eb55e923",
+    "action": "comment_added",
+    "details": {
+      "task_id": "2f67d845",
+      "author": "main"
+    },
+    "timestamp": "2026-03-12T11:32:34.393238"
+  },
+  {
+    "id": "b01e8c71-68c2-437e-b2da-214b5599a6ab",
+    "action": "task_started",
+    "details": {
+      "task_id": "2f67d845",
+      "agent_id": "main",
+      "title": "Spec: implementation_plan.md"
+    },
+    "timestamp": "2026-03-12T11:32:34.290903"
+  },
+  {
+    "id": "878938f1-31f8-43cd-bac5-1dec3d79f2b6",
+    "action": "task_claimed",
+    "details": {
+      "task_id": "2f67d845",
+      "agent_id": "main",
+      "title": "Spec: implementation_plan.md"
+    },
+    "timestamp": "2026-03-12T11:32:14.152821"
+  },
+  {
+    "id": "2bf67d8c-4be6-4fe7-986d-02d6710825ec",
+    "action": "requirement_uploaded",
+    "details": {
+      "filename": "implementation_plan.md",
+      "spec_task_id": "2f67d845"
+    },
+    "timestamp": "2026-03-12T11:25:19.829668"
+  },
+  {
+    "id": "b7903e25-c7ac-4e62-b850-6e69ffc6592d",
+    "action": "agent_added",
+    "details": {
+      "agent_id": "oscar"
+    },
+    "timestamp": "2026-03-12T11:24:40.193008"
+  },
+  {
+    "id": "9edd519a-8a1a-49e0-87fb-1381a4bf83b5",
+    "action": "project_created",
+    "details": {
+      "name": "test",
+      "agents": []
+    },
+    "timestamp": "2026-03-12T11:06:47.308642"
+  }
+]

@@ -1,0 +1,30 @@
+.agent-card .agent-remove-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: all 0.2s;
+}
+
+.agent-card:hover .agent-remove-btn {
+  opacity: 1;
+}
+
+.agent-card .agent-remove-btn:hover {
+  background: var(--danger);
+  color: white;
+}
+
+.agent-card .agent-status.doing {
+  color: var(--warning);
+  font-size: 11px;
+}
+
+.agent-card .agent-status.idle {
+  color: var(--success);
+  font-size: 11px;
+}

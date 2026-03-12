@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Pool - Multi Agent Workspace</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 class="logo">Task Pool</h1>
+                <select id="project-select" class="project-select">
+                    <option value="">Select Project...</option>
+                </select>
+            </div>
+            <div class="header-right">
+                <button id="btn-create-project" class="btn btn-secondary">New Project</button>
+                <button id="btn-upload-requirement" class="btn btn-primary">Upload Requirement</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left Sidebar: Agents -->
+            <aside class="sidebar agents-panel">
+                <h2>Agents</h2>
+                <div id="agents-list" class="agents-list">
+                    <div class="empty-state">Select a project to see agents</div>
+                </div>
+            </aside>
+
+            <!-- Center: Task Pool -->
+            <section class="task-pool">
+                <div class="task-pool-header">
+                    <h2>Task Pool</h2>
+                    <div class="task-filters">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="open">Open</button>
+                        <button class="filter-btn" data-filter="in_progress">In Progress</button>
+                        <button class="filter-btn" data-filter="review">Review</button>
+                        <button class="filter-btn" data-filter="done">Done</button>
+                    </div>
+                </div>
+                <div id="task-list" class="task-list">
+                    <div class="empty-state">Select a project to see tasks</div>
+                </div>
+            </section>
+
+            <!-- Right Sidebar: Activity Feed -->
+            <aside class="sidebar activity-panel">
+                <h2>Activity</h2>
+                <div id="activity-feed" class="activity-feed">
+                    <div class="empty-state">No activity yet</div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Task Detail Modal -->
+        <div id="task-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modal-task-title">Task Details</h3>
+                    <button class="modal-close" id="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="task-meta">
+                        <span id="modal-task-type" class="task-badge">spec</span>
+                        <span id="modal-task-status" class="task-status">open</span>
+                    </div>
+                    <div class="task-description">
+                        <h4>Description</h4>
+                        <p id="modal-task-description">...</p>
+                    </div>
+                    <div class="task-progress">
+                        <h4>Progress</h4>
+                        <div class="progress-bar">
+                            <div id="modal-progress-fill" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <span id="modal-progress-text">0%</span>
+                    </div>
+                    <div class="task-info">
+                        <div class="info-row">
+                            <span class="info-label">Created by:</span>
+                            <span id="modal-created-by">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Claimed by:</span>
+                            <span id="modal-claimed-by">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Created at:</span>
+                            <span id="modal-created-at">-</span>
+                        </div>
+                    </div>
+                    <div class="task-comments">
+                        <h4>Comments</h4>
+                        <div id="modal-comments" class="comments-list">
+                            <div class="empty-state">No comments yet</div>
+                        </div>
+                        <div class="comment-form">
+                            <textarea id="comment-input" placeholder="Add a comment..."></textarea>
+                            <button id="btn-add-comment" class="btn btn-small">Add Comment</button>
+                        </div>
+                    </div>
+                    <div class="task-artifacts">
+                        <h4>Artifacts</h4>
+                        <div id="modal-artifacts" class="artifacts-list">
+                            <div class="empty-state">No artifacts</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Project Modal -->
+        <div id="project-modal" class="modal">
+            <div class="modal-content modal-small">
+                <div class="modal-header">
+                    <h3>Create New Project</h3>
+                    <button class="modal-close" id="project-modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="project-name">Project Name</label>
+                        <input type="text" id="project-name" placeholder="My Project">
+                    </div>
+                    <div class="form-group">
+                        <label for="project-description">Description</label>
+                        <textarea id="project-description" placeholder="Project description..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Add Agents (optional)</label>
+                        <div class="agent-selector">
+                            <div class="agent-search-wrapper">
+                                <input type="text" id="agent-search" placeholder="Search agents..." autocomplete="off">
+                                <div id="agent-dropdown" class="agent-dropdown hidden">
+                                    <div id="agent-list" class="agent-list"></div>
+                                </div>
+                            </div>
+                            <div id="selected-agents" class="selected-agents"></div>
+                        </div>
+                    </div>
+                    <button id="btn-save-project" class="btn btn-primary">Create Project</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Requirement Modal -->
+        <div id="upload-modal" class="modal">
+            <div class="modal-content modal-small">
+                <div class="modal-header">
+                    <h3>Upload Requirement</h3>
+                    <button class="modal-close" id="upload-modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="requirement-file">Select .md file</label>
+                        <input type="file" id="requirement-file" accept=".md">
+                    </div>
+                    <button id="btn-upload-file" class="btn btn-primary">Upload</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Task Modal -->
+        <div id="task-create-modal" class="modal">
+            <div class="modal-content modal-small">
+                <div class="modal-header">
+                    <h3>Create Task</h3>
+                    <button class="modal-close" id="task-create-modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="task-title">Title</label>
+                        <input type="text" id="task-title" placeholder="Task title">
+                    </div>
+                    <div class="form-group">
+                        <label for="task-type">Type</label>
+                        <select id="task-type">
+                            <option value="code">Code</option>
+                            <option value="test">Test</option>
+                            <option value="docs">Docs</option>
+                            <option value="refactor">Refactor</option>
+                            <option value="debug">Debug</option>
+                            <option value="research">Research</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-description">Description</label>
+                        <textarea id="task-description" placeholder="Task description..."></textarea>
+                    </div>
+                    <button id="btn-save-task" class="btn btn-primary">Create Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+[
+  {
+    "id": "19d99589-1994-41f6-8eb7-6070507df910",
+    "action": "task_claimed",
+    "details": {
+      "task_id": "f8fb5988",
+      "agent_id": "agent-1",
+      "title": "Implement user login"
+    },
+    "timestamp": "2026-03-12T00:33:08.874409"
+  },
+  {
+    "id": "d7f79fc0-5057-4135-9b85-a6d11e949747",
+    "action": "task_created",
+    "details": {
+      "task_id": "f8fb5988",
+      "title": "Implement user login",
+      "type": "code"
+    },
+    "timestamp": "2026-03-12T00:32:56.348163"
+  },
+  {
+    "id": "a76c49dc-0fff-4b00-9ad1-cc68958372d9",
+    "action": "project_created",
+    "details": {
+      "name": "Test Project",
+      "agents": [
+        "agent-1",
+        "agent-2",
+        "agent-3"
+      ]
+    },
+    "timestamp": "2026-03-12T00:32:44.632514"
+  }
+]

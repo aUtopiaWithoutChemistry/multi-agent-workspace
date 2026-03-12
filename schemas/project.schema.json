@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "agents": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "requirements_dir": {
+      "type": "string",
+      "default": "requirements/"
+    },
+    "requirements_meta": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "spec_task_id": { "type": "string" },
+          "processed": { "type": "boolean" }
+        }
+      }
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": ["id", "name", "agents", "created_by", "created_at"]
+}

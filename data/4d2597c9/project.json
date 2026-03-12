@@ -1,0 +1,19 @@
+{
+  "id": "4d2597c9",
+  "name": "test",
+  "description": "",
+  "agents": [
+    "oscar",
+    "main"
+  ],
+  "requirements_dir": "requirements/",
+  "requirements_meta": {
+    "implementation_plan.md": {
+      "spec_task_id": "2f67d845",
+      "processed": false
+    }
+  },
+  "created_by": "human",
+  "created_at": "2026-03-12T11:06:47.306329",
+  "updated_at": "2026-03-12T12:54:07.155548"
+}
