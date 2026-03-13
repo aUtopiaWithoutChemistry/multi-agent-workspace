@@ -4,7 +4,6 @@
   "identifier": "com.taskpool.app",
   "version": "1.0.0",
   "build": {
-    "devtools": true,
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },

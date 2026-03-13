@@ -6,6 +6,13 @@ cd "$SCRIPT_DIR"
 
 echo "🚀 Starting Task Pool..."
 
+# Kill any existing process on port 8765
+if lsof -i :8765 > /dev/null 2>&1; then
+    echo "🔪 Killing existing process on port 8765..."
+    lsof -ti :8765 | xargs kill -9 2>/dev/null
+    sleep 1
+fi
+
 # Install Python dependencies if needed
 if ! python3 -c "import fastapi" 2>/dev/null; then
     echo "📦 Installing Python dependencies..."
@@ -32,30 +39,26 @@ fi
 
 echo "✅ Backend running at http://localhost:8765"
 
-# Build and run desktop app
+# Build desktop app if needed
 cd task-pool-desktop
-
-# Check for existing build
-APP_PATH=""
-if [ -f "src-tauri/target/release/task-pool-desktop" ]; then
-    APP_PATH="src-tauri/target/release/task-pool-desktop"
-elif [ -f "src-tauri/target/debug/task-pool-desktop" ]; then
-    APP_PATH="src-tauri/target/debug/task-pool-desktop"
-fi
-
-# Build if needed
-if [ -z "$APP_PATH" ]; then
+if [ ! -f "src-tauri/target/release/task-pool-desktop" ]; then
     echo "📦 Building desktop app..."
     npm install
     cd src-tauri
     cargo build --release
     cd ..
-    APP_PATH="src-tauri/target/release/task-pool-desktop"
+fi
+
+# Build frontend if needed
+if [ ! -d "dist" ]; then
+    echo "📦 Building frontend..."
+    npm run build
 fi
 
 # Run the app
 echo "🖥️ Starting Desktop App..."
-open "$APP_PATH.app" 2>/dev/null || "$APP_PATH" &
+open src-tauri/target/release/task-pool-desktop.app 2>/dev/null || \
+    ./src-tauri/target/release/task-pool-desktop &
 
 cd "$SCRIPT_DIR"
 
