@@ -1,5 +1,5 @@
 #!/bin/bash
-# Start Task Pool Backend + Desktop App
+# Start Task Pool - One command to launch everything
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
@@ -10,6 +10,11 @@ echo "🚀 Starting Task Pool..."
 if ! python3 -c "import fastapi" 2>/dev/null; then
     echo "📦 Installing Python dependencies..."
     pip3 install -r requirements.txt
+fi
+
+# Source Rust environment
+if [ -f "$HOME/.cargo/env" ]; then
+    source "$HOME/.cargo/env"
 fi
 
 # Start backend in background
@@ -29,24 +34,26 @@ fi
 
 echo "✅ Backend running at http://localhost:8765"
 
-# Check if desktop app is already built
-if [ -d "task-pool-desktop/src-tauri/target/release/task-pool-desktop" ]; then
-    echo "🚀 Starting Desktop App..."
-    open task-pool-desktop/src-tauri/target/release/task-pool-desktop.app 2>/dev/null || \
-    task-pool-desktop/src-tauri/target/release/task-pool-desktop &
-    DESKTOP_PID=$!
+# Build and run desktop app
+echo "🖥️ Building & starting Desktop App..."
+cd task-pool-desktop
+
+# Build if needed
+if [ ! -d "src-tauri/target/release/task-pool-desktop.app" ]; then
+    echo "📦 Building desktop app (first time only)..."
+    npm install
+    cargo build --release
 fi
+
+# Run the app
+open src-tauri/target/release/task-pool-desktop.app 2>/dev/null || \
+    ./src-tauri/target/release/task-pool-desktop &
 
 echo ""
 echo "🎉 Task Pool is ready!"
-echo "   Backend API: http://localhost:8765"
+echo "   Backend: http://localhost:8765"
 echo ""
-echo "To run the Desktop App:"
-echo "   cd task-pool-desktop"
-echo "   source ~/.cargo/env && cargo run"
-echo ""
-echo "Press Ctrl+C to stop"
-echo "Backend PID: $BACKEND_PID"
+echo "Press Ctrl+C to stop everything"
 
 # Wait for Ctrl+C
 trap "echo '🛑 Stopping...'; kill $BACKEND_PID 2>/dev/null; exit 0" INT TERM
