@@ -24,6 +24,10 @@ export const api = {
     method: 'PATCH',
     body: JSON.stringify(data)
   }),
+  deleteProject: (id) => api.request(`/api/projects/${id}`, {
+    method: 'DELETE',
+    headers: { 'X-Human-Request': 'true' }
+  }),
   createProject: (data) => api.request('/api/projects', {
     method: 'POST',
     body: JSON.stringify(data)
@@ -88,6 +92,9 @@ export const api = {
 
   // Activity
   getActivity: (projectId) => api.request(`/api/projects/${projectId}/activity`),
+
+  // Workspace
+  getWorkspaceFiles: (projectId) => api.request(`/api/projects/${projectId}/workspace`),
 };
 
 export default api;

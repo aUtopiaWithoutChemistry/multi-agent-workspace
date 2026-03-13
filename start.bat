@@ -25,7 +25,7 @@ start frontend\index.html
 
 echo.
 echo Task Pool is ready!
-echo   Backend: http://localhost:8000
-echo   Frontend: frontend\index.html
+echo   Backend: http://localhost:8765
+echo   Frontend: http://localhost:3001
 echo.
 pause

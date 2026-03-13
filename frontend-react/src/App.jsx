@@ -4,7 +4,7 @@ import './App.css'
 import './agent-panel.css'
 
 // Header Component
-function Header({ projects, currentProject, onProjectChange, onNewProject, onUpload, onSettings }) {
+function Header({ projects, currentProject, onProjectChange, onNewProject, onUpload, onSettings, onToggleWorkspace, showWorkspace }) {
   return (
     <header className="header">
       <div className="header-left">
@@ -21,6 +21,11 @@ function Header({ projects, currentProject, onProjectChange, onNewProject, onUpl
         </select>
       </div>
       <div className="header-right">
+        {currentProject && currentProject.workspace && (
+          <button className={`btn ${showWorkspace ? 'btn-primary' : 'btn-secondary'}`} onClick={onToggleWorkspace}>
+            📁 Files
+          </button>
+        )}
         {currentProject && (
           <button className="btn btn-secondary" onClick={onSettings}>Settings</button>
         )}
@@ -178,7 +183,7 @@ function TaskPool({ tasks, filter, onFilterChange, onTaskClick }) {
   })
 
   const sorted = [...filtered].sort((a, b) => {
-    const order = { 'in_progress': 0, 'claimed': 1, 'review': 2, 'open': 3, 'done': 4 }
+    const order = { 'in_progress': 0, 'claimed': 1, 'in_review': 2, 'review': 3, 'open': 4, 'done': 5 }
     return (order[a.status] || 99) - (order[b.status] || 99)
   })
 
@@ -234,7 +239,7 @@ function TaskPool({ tasks, filter, onFilterChange, onTaskClick }) {
       </div>
       <div className="task-filters" style={{ padding: '0 16px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: '4px' }}>
-          {['all', 'open', 'in_progress', 'review', 'done'].map(f => (
+          {['all', 'open', 'in_progress', 'in_review', 'review', 'done'].map(f => (
             <button
               key={f}
               className={`filter-btn ${filter === f ? 'active' : ''}`}
@@ -271,6 +276,46 @@ function TaskPool({ tasks, filter, onFilterChange, onTaskClick }) {
         )}
       </div>
     </section>
+  )
+}
+
+// Workspace File Browser Component
+function WorkspacePanel({ files, workspace }) {
+  const renderFile = (file, depth = 0) => (
+    <div key={file.path} style={{ paddingLeft: `${depth * 16}px` }}>
+      <div className="file-item">
+        <span style={{ marginRight: '6px' }}>{file.type === 'folder' ? '📁' : '📄'}</span>
+        <span>{file.name}</span>
+      </div>
+      {file.children && file.children.map(child => renderFile(child, depth + 1))}
+    </div>
+  )
+
+  if (!workspace) {
+    return (
+      <aside className="sidebar workspace-panel">
+        <div className="panel-header">Workspace</div>
+        <div className="empty-state">No workspace configured</div>
+      </aside>
+    )
+  }
+
+  return (
+    <aside className="sidebar workspace-panel">
+      <div className="panel-header">Workspace</div>
+      <div style={{ padding: '8px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ fontSize: '11px', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>
+          {workspace}
+        </div>
+      </div>
+      <div className="file-list" style={{ padding: '8px', overflow: 'auto', flex: 1 }}>
+        {files.length === 0 ? (
+          <div className="empty-state" style={{ fontSize: '12px' }}>Empty workspace</div>
+        ) : (
+          files.map(file => renderFile(file))
+        )}
+      </div>
+    </aside>
   )
 }
 
@@ -406,29 +451,82 @@ function CreateProjectModal({ isOpen, onClose, onSubmit, availableAgents }) {
   const [description, setDescription] = useState('')
   const [workspace, setWorkspace] = useState('')
   const [selectedAgents, setSelectedAgents] = useState([])
+  const [isDragging, setIsDragging] = useState(false)
 
   if (!isOpen) return null
 
-  const handleSelectDirectory = async () => {
-    try {
-      // Use the File System Access API if available
-      const handle = await window.showDirectoryPicker()
-      setWorkspace(handle.name || handle.name)
-    } catch (err) {
-      // Fallback: create a hidden file input
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.webkitdirectory = true
-      input.onchange = (e) => {
-        const files = e.target.files
-        if (files.length > 0) {
-          // Get the directory path
-          const path = files[0].webkitRelativePath.split('/')[0]
-          setWorkspace('/Users/jerry/' + path)
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+
+    const items = e.dataTransfer.items
+    if (items && items.length > 0) {
+      const item = items[0]
+      if (item.kind === 'file') {
+        const entry = item.webkitGetAsEntry?.()
+        if (entry) {
+          // For directories, we can get the name but not the full path in browser
+          // Use a file input fallback approach
+          const input = document.createElement('input')
+          input.type = 'file'
+          input.webkitdirectory = true
+          input.onchange = (ev) => {
+            const files = ev.target.files
+            if (files.length === 0) {
+              alert('Empty folder detected. Due to browser security restrictions, please manually enter the full path below.')
+              return
+            }
+            // Get the first file's path and extract directory
+            const file = files[0]
+            // Try to get the path from webkitRelativePath
+            if (file.webkitRelativePath) {
+              const dirPath = file.webkitRelativePath.split('/')[0]
+              // This gives us the relative path, combine with a base
+              // Unfortunately browsers don't give us the full path
+              // So we'll use the file name as workspace name suggestion
+              setWorkspace('/Users/jerry/' + dirPath)
+            }
+          }
+          input.click()
+          return
         }
       }
-      input.click()
     }
+  }
+
+  const handleBrowse = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.webkitdirectory = true
+    input.onchange = (e) => {
+      const files = e.target.files
+      if (files.length === 0) {
+        // Empty folder selected - show message
+        alert('Empty folder detected. Due to browser security restrictions, please manually enter the full path below.')
+        return
+      }
+      const file = files[0]
+      if (file.webkitRelativePath) {
+        const dirPath = file.webkitRelativePath.split('/')[0]
+        // Combine with user's home directory as best effort
+        // User can edit this path if incorrect
+        setWorkspace('/Users/jerry/' + dirPath)
+      }
+    }
+    input.click()
   }
 
   const handleSubmit = () => {
@@ -466,18 +564,34 @@ function CreateProjectModal({ isOpen, onClose, onSubmit, availableAgents }) {
           </div>
           <div className="form-group">
             <label>Workspace (folder for agent to work in)</label>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <input
-                type="text"
-                value={workspace}
-                onChange={(e) => setWorkspace(e.target.value)}
-                placeholder="/path/to/workspace (optional)"
-                style={{ flex: 1 }}
-              />
-              <button type="button" className="btn btn-secondary" onClick={handleSelectDirectory}>
-                Browse
-              </button>
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              style={{
+                border: `2px dashed ${isDragging ? 'var(--accent)' : 'var(--border)'}`,
+                borderRadius: '8px',
+                padding: '16px',
+                textAlign: 'center',
+                marginBottom: '8px',
+                background: isDragging ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onClick={handleBrowse}
+            >
+              <div style={{ fontSize: '24px', marginBottom: '8px' }}>📁</div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
+                {isDragging ? 'Drop folder here' : 'Drag & drop a folder here, or click to browse'}
+              </div>
             </div>
+            <input
+              type="text"
+              value={workspace}
+              onChange={(e) => setWorkspace(e.target.value)}
+              placeholder="/path/to/workspace (leave empty for auto-generated)"
+              style={{ width: '100%' }}
+            />
           </div>
           <div className="form-group">
             <label>Add Agents (optional)</label>
@@ -590,11 +704,12 @@ function AddAgentModal({ isOpen, onClose, onAdd, availableAgents, currentAgents 
 }
 
 // Settings Modal
-function SettingsModal({ isOpen, onClose, onSave, project }) {
+function SettingsModal({ isOpen, onClose, onSave, onDelete, project }) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [workspace, setWorkspace] = useState('')
   const [requirementsDir, setRequirementsDir] = useState('')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   useEffect(() => {
     if (project) {
@@ -602,6 +717,7 @@ function SettingsModal({ isOpen, onClose, onSave, project }) {
       setDescription(project.description || '')
       setWorkspace(project.workspace || '')
       setRequirementsDir(project.requirements_dir || '')
+      setShowDeleteConfirm(false)
     }
   }, [project])
 
@@ -614,6 +730,15 @@ function SettingsModal({ isOpen, onClose, onSave, project }) {
       workspace,
       requirements_dir: requirementsDir
     })
+  }
+
+  const handleDelete = () => {
+    if (showDeleteConfirm) {
+      onDelete(project.id)
+      setShowDeleteConfirm(false)
+    } else {
+      setShowDeleteConfirm(true)
+    }
   }
 
   return (
@@ -671,6 +796,10 @@ function SettingsModal({ isOpen, onClose, onSave, project }) {
                 <span>{project.stats.in_progress}</span>
               </div>
               <div className="info-row">
+                <span className="info-label">In Review</span>
+                <span>{project.stats.in_review}</span>
+              </div>
+              <div className="info-row">
                 <span className="info-label">Review</span>
                 <span>{project.stats.review}</span>
               </div>
@@ -683,6 +812,46 @@ function SettingsModal({ isOpen, onClose, onSave, project }) {
           <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
             <button className="btn btn-primary" onClick={handleSave}>Save Changes</button>
             <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+          </div>
+
+          {/* Delete Section */}
+          <div style={{ marginTop: '32px', paddingTop: '20px', borderTop: '1px solid var(--bg-tertiary)' }}>
+            <h4 style={{ marginBottom: '12px', fontSize: '13px', fontWeight: '600', color: 'var(--danger)' }}>Danger Zone</h4>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px' }}>
+              Deleting a project will permanently remove all tasks and data. This action cannot be undone.
+            </p>
+            {showDeleteConfirm ? (
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <span style={{ fontSize: '13px', color: 'var(--danger)' }}>Type project name to confirm:</span>
+                <input
+                  type="text"
+                  placeholder={project?.name}
+                  onChange={(e) => {
+                    if (e.target.value === project?.name) {
+                      handleDelete()
+                    }
+                  }}
+                  style={{ flex: 1, padding: '8px', fontSize: '13px' }}
+                />
+                <button className="btn btn-secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
+              </div>
+            ) : (
+              <button
+                className="btn btn-danger"
+                onClick={handleDelete}
+                style={{
+                  background: 'var(--danger)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px 16px',
+                  borderRadius: 'var(--radius-sm)',
+                  cursor: 'pointer',
+                  fontSize: '13px'
+                }}
+              >
+                Delete Project
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -812,12 +981,50 @@ function App() {
   const [selectedTask, setSelectedTask] = useState(null)
   const [availableAgents, setAvailableAgents] = useState([])
   const [agentStatuses, setAgentStatuses] = useState([])
+  const [workspaceFiles, setWorkspaceFiles] = useState([])
+  const [showWorkspacePanel, setShowWorkspacePanel] = useState(false)
 
-  // Load projects on mount
+  // Load workspace files when project changes
   useEffect(() => {
-    loadProjects()
-    loadAvailableAgents()
+    if (currentProject?.workspace) {
+      loadWorkspaceFiles()
+    }
+  }, [currentProject?.id])
+
+  const loadWorkspaceFiles = async () => {
+    if (!currentProject?.id) return
+    const data = await api.getWorkspaceFiles(currentProject.id)
+    if (data) {
+      setWorkspaceFiles(data.files || [])
+    }
+  }
+
+  // Load projects on mount and restore last selected project
+  useEffect(() => {
+    const savedProjectId = localStorage.getItem('lastProjectId')
+
+    const init = async () => {
+      await loadProjects()
+      loadAvailableAgents()
+
+      // Restore last selected project from localStorage
+      if (savedProjectId) {
+        const data = await api.getProjects()
+        const exists = (data || []).find(p => p.id === savedProjectId)
+        if (exists) {
+          setCurrentProject(exists)
+        }
+      }
+    }
+    init()
   }, [])
+
+  // Save selected project to localStorage
+  useEffect(() => {
+    if (currentProject) {
+      localStorage.setItem('lastProjectId', currentProject.id)
+    }
+  }, [currentProject])
 
   // Auto-refresh when project is selected
   useEffect(() => {
@@ -904,6 +1111,15 @@ function App() {
     }
   }
 
+  const handleDeleteProject = async (projectId) => {
+    await api.deleteProject(projectId)
+    setCurrentProject(null)
+    setTasks([])
+    setActivities([])
+    setShowSettingsModal(false)
+    loadProjects()
+  }
+
   const handleTaskClick = async (task) => {
     const fullTask = await api.getTask(currentProject.id, task.id)
     setSelectedTask(fullTask)
@@ -929,6 +1145,8 @@ function App() {
         onNewProject={() => setShowProjectModal(true)}
         onUpload={() => setShowUploadModal(true)}
         onSettings={() => setShowSettingsModal(true)}
+        onToggleWorkspace={() => setShowWorkspacePanel(!showWorkspacePanel)}
+        showWorkspace={showWorkspacePanel}
       />
 
       <main className="main-content">
@@ -945,6 +1163,12 @@ function App() {
           onTaskClick={handleTaskClick}
         />
 
+        {showWorkspacePanel && currentProject?.workspace && (
+          <WorkspacePanel
+            files={workspaceFiles}
+            workspace={currentProject.workspace}
+          />
+        )}
         <ActivityFeed activities={activities} />
       </main>
 
@@ -979,6 +1203,7 @@ function App() {
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
         onSave={handleUpdateProject}
+        onDelete={handleDeleteProject}
         project={currentProject}
       />
     </div>

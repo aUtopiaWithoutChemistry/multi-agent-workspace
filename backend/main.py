@@ -11,7 +11,7 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, List, Dict, Any
-from fastapi import FastAPI, HTTPException, UploadFile, File, Query, Body
+from fastapi import FastAPI, HTTPException, UploadFile, File, Query, Body, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -448,7 +448,8 @@ def get_project(project_id: str):
         "open": len([t for t in tasks if t["status"] == "open"]),
         "claimed": len([t for t in tasks if t["status"] == "claimed"]),
         "in_progress": len([t for t in tasks if t["status"] == "in_progress"]),
-        "review": len([t for t in tasks if t["status"] == "review"]),
+        "in_review": len([t for t in tasks if t["status"] == "in_review"]),
+        "review": len([t for t in tasks if t["type"] == "review"]),
         "done": len([t for t in tasks if t["status"] == "done"])
     }
 
@@ -483,7 +484,8 @@ def update_project(project_id: str, update: dict):
         "open": len([t for t in tasks if t["status"] == "open"]),
         "claimed": len([t for t in tasks if t["status"] == "claimed"]),
         "in_progress": len([t for t in tasks if t["status"] == "in_progress"]),
-        "review": len([t for t in tasks if t["status"] == "review"]),
+        "in_review": len([t for t in tasks if t["status"] == "in_review"]),
+        "review": len([t for t in tasks if t["type"] == "review"]),
         "done": len([t for t in tasks if t["status"] == "done"])
     }
 
@@ -495,11 +497,35 @@ def update_project(project_id: str, update: dict):
 
 
 @app.delete("/api/projects/{project_id}")
-def delete_project(project_id: str):
-    """Delete a project"""
+def delete_project(project_id: str, request: Request):
+    """Delete a project - Only allowed from UI (human-initiated)"""
+    # Security: Only allow deletion from web UI
+    # Agents cannot delete projects via API
+    x_human_request = request.headers.get("X-Human-Request", "")
+
+    if not x_human_request:
+        raise HTTPException(
+            status_code=403,
+            detail="Project deletion is not allowed via API. Please use the web interface."
+        )
+
+    # Load project to verify it exists
+    project = load_project(project_id)
+
+    # Delete from database
+    conn = sqlite3.connect(str(DB_PATH))
+    c = conn.cursor()
+    c.execute("DELETE FROM projects WHERE id = ?", (project_id,))
+    c.execute("DELETE FROM tasks WHERE project_id = ?", (project_id,))
+    c.execute("DELETE FROM activity WHERE project_id = ?", (project_id,))
+    conn.commit()
+    conn.close()
+
+    # Delete project directory
     project_dir = get_project_dir(project_id)
     if project_dir.exists():
         shutil.rmtree(project_dir)
+
     return {"message": "Project deleted"}
 
 
@@ -667,7 +693,12 @@ def claim_task(project_id: str, task_id: str, agent_id: str):
         "title": task["title"]
     })
 
-    return task
+    # Include workspace info for the agent
+    return {
+        **task,
+        "workspace": project.get("workspace", ""),
+        "project_name": project.get("name", "")
+    }
 
 
 @app.post("/api/projects/{project_id}/tasks/{task_id}/start")
@@ -718,9 +749,27 @@ def complete_task(project_id: str, task_id: str, agent_id: str, body: Optional[d
     # Get sub_tasks from body
     sub_tasks = body.get("sub_tasks") if body else None
 
-    # For spec tasks: create sub-tasks from the decomposition instead of review
-    if task["type"] == "spec" and sub_tasks:
-        # First pass: create all subtasks to get their IDs
+    # Task type determines what can be created
+    task_type = task["type"]
+
+    # For spec tasks: sub_tasks are REQUIRED
+    if task_type == "spec":
+        if not sub_tasks:
+            raise HTTPException(
+                status_code=400,
+                detail="SPEC tasks must include sub_tasks in the request body. Decompose the requirement into specific coding tasks."
+            )
+
+    # For code tasks: can optionally create sub_tasks (test, docs, debug, refactor)
+    # For debug/refactor: can create sub_tasks too
+    # For other tasks: sub_tasks not allowed
+    allowed_subtask_types = ["spec", "code", "debug", "refactor"]
+    if sub_tasks and task_type not in allowed_subtask_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Task type '{task_type}' cannot create sub_tasks. Only {allowed_subtask_types} can create sub-tasks."
+        )
+        # Create sub-tasks
         created_subtasks = []
         for subtask_data in sub_tasks:
             subtask = {
@@ -728,7 +777,7 @@ def complete_task(project_id: str, task_id: str, agent_id: str, body: Optional[d
                 "title": subtask_data.get("title", "Untitled subtask"),
                 "description": subtask_data.get("description", ""),
                 "status": "open",
-                "type": subtask_data.get("type", "code"),  # code, test, docs, etc.
+                "type": subtask_data.get("type", "code"),
                 "priority": 0,
                 "claimed_by": None,
                 "claimed_at": None,
@@ -745,13 +794,12 @@ def complete_task(project_id: str, task_id: str, agent_id: str, body: Optional[d
             tasks.append(subtask)
             created_subtasks.append(subtask)
 
-        # Second pass: resolve dependencies
+        # Resolve dependencies
         for subtask_data, subtask in zip(sub_tasks, created_subtasks):
             deps = subtask_data.get("depends_on", [])
             if deps:
                 resolved_deps = []
                 for dep_title in deps:
-                    # Find subtask by title
                     for st in created_subtasks:
                         if st["title"] == dep_title:
                             resolved_deps.append(st["id"])
@@ -763,7 +811,7 @@ def complete_task(project_id: str, task_id: str, agent_id: str, body: Optional[d
             "agent_id": agent_id,
             "subtask_count": len(sub_tasks)
         })
-    # For other tasks: create review task
+    # For other tasks: create review task (if not already a review task)
     elif task["type"] != "review":
         review_task = {
             "id": str(uuid.uuid4())[:8],
@@ -784,10 +832,14 @@ def complete_task(project_id: str, task_id: str, agent_id: str, body: Optional[d
             "progress": 0
         }
         tasks.append(review_task)
-
-    task["status"] = "done"
-    task["progress"] = 100
-    task["updated_at"] = now
+        # For code/debug/refactor: mark as "in_review" until review passes
+        if task["type"] in ["code", "debug", "refactor"]:
+            task["status"] = "in_review"
+            task["progress"] = 90  # Not fully complete yet
+        else:
+            task["status"] = "done"
+            task["progress"] = 100
+        task["updated_at"] = now
     tasks[task_idx] = task
 
     save_tasks(project_id, tasks)
@@ -888,22 +940,26 @@ def submit_review(project_id: str, task_id: str, approved: bool, comment: str = 
             parent_idx = next((i for i, t in enumerate(tasks) if t["id"] == parent_task_id), None)
             if parent_idx is not None:
                 tasks[parent_idx]["status"] = "done"
+                tasks[parent_idx]["progress"] = 100
                 tasks[parent_idx]["updated_at"] = now
 
         task["status"] = "done"
         task["progress"] = 100
         action = "review_approved"
     else:
-        # Reject - send back to original agent
+        # Reject - send back to original agent for fixes
         if parent_task_id:
             parent_idx = next((i for i, t in enumerate(tasks) if t["id"] == parent_task_id), None)
             if parent_idx is not None:
-                tasks[parent_idx]["status"] = "open"
+                # Reset to in_progress so the original agent can fix it
+                tasks[parent_idx]["status"] = "in_progress"
+                tasks[parent_idx]["progress"] = 50  # Partial progress since some work was done
                 tasks[parent_idx]["reject_count"] = tasks[parent_idx].get("reject_count", 0) + 1
                 # If rejected too many times, release for others
-                if tasks[parent_idx].get("reject_count", 0) > 10:
+                if tasks[parent_idx].get("reject_count", 0) > 3:
                     tasks[parent_idx]["claimed_by"] = None
                     tasks[parent_idx]["claimed_at"] = None
+                    tasks[parent_idx]["status"] = "open"
                 tasks[parent_idx]["updated_at"] = now
 
         task["status"] = "done"
@@ -1103,6 +1159,39 @@ def get_project_agents(project_id: str):
     return agent_status
 
 
+# Workspace file operations
+@app.get("/api/projects/{project_id}/workspace")
+def list_workspace_files(project_id: str):
+    """List files and folders in project workspace"""
+    project = load_project(project_id)
+    workspace = project.get("workspace", "")
+    if not workspace or not Path(workspace).exists():
+        return {"files": [], "workspace": workspace}
+
+    def get_tree(path: Path, prefix: str = ""):
+        items = []
+        try:
+            for item in sorted(path.iterdir()):
+                rel_path = item.relative_to(path)
+                item_info = {
+                    "name": rel_path.name,
+                    "type": "folder" if item.is_dir() else "file",
+                    "path": str(rel_path)
+                }
+                if item.is_dir():
+                    item_info["children"] = get_tree(item, prefix + "  ")
+                items.append(item_info)
+        except PermissionError:
+            pass
+        return items
+
+    workspace_path = Path(workspace)
+    return {
+        "workspace": workspace,
+        "files": get_tree(workspace_path)
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8765)
