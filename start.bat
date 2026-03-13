@@ -1,5 +1,5 @@
 @echo off
-REM Start Task Pool - Windows launcher
+REM Start Task Pool Backend + Desktop App
 
 cd /d "%~dp0"
 
@@ -19,13 +19,18 @@ start "Task Pool Backend" python3 backend\main.py
 REM Wait for backend
 timeout /t 3 /nobreak >nul
 
-REM Open frontend
-echo Opening frontend...
-start frontend\index.html
+REM Open desktop app if built
+if exist "task-pool-desktop\src-tauri\target\release\task-pool-desktop.exe" (
+    echo Starting Desktop App...
+    start "" "task-pool-desktop\src-tauri\target\release\task-pool-desktop.exe"
+)
 
 echo.
 echo Task Pool is ready!
-echo   Backend: http://localhost:8765
-echo   Frontend: http://localhost:3001
+echo   Backend API: http://localhost:8765
+echo.
+echo To run the Desktop App:
+echo   cd task-pool-desktop
+echo   cargo run
 echo.
 pause

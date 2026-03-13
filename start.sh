@@ -1,5 +1,5 @@
 #!/bin/bash
-# Start Task Pool - One-click launcher
+# Start Task Pool Backend + Desktop App
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
@@ -10,12 +10,6 @@ echo "🚀 Starting Task Pool..."
 if ! python3 -c "import fastapi" 2>/dev/null; then
     echo "📦 Installing Python dependencies..."
     pip3 install -r requirements.txt
-fi
-
-# Install React dependencies if needed
-if [ ! -d "frontend-react/node_modules" ]; then
-    echo "📦 Installing React dependencies..."
-    cd frontend-react && npm install && cd ..
 fi
 
 # Start backend in background
@@ -35,23 +29,26 @@ fi
 
 echo "✅ Backend running at http://localhost:8765"
 
-# Start React frontend
-echo "🌐 Starting React frontend..."
-cd frontend-react && npm run dev -- --host &
-REACT_PID=$!
-
-sleep 3
+# Check if desktop app is already built
+if [ -d "task-pool-desktop/src-tauri/target/release/task-pool-desktop" ]; then
+    echo "🚀 Starting Desktop App..."
+    open task-pool-desktop/src-tauri/target/release/task-pool-desktop.app 2>/dev/null || \
+    task-pool-desktop/src-tauri/target/release/task-pool-desktop &
+    DESKTOP_PID=$!
+fi
 
 echo ""
 echo "🎉 Task Pool is ready!"
-echo "   Backend: http://localhost:8765"
-echo "   Frontend: http://localhost:3001"
+echo "   Backend API: http://localhost:8765"
+echo ""
+echo "To run the Desktop App:"
+echo "   cd task-pool-desktop"
+echo "   source ~/.cargo/env && cargo run"
 echo ""
 echo "Press Ctrl+C to stop"
 echo "Backend PID: $BACKEND_PID"
-echo "React PID: $REACT_PID"
 
 # Wait for Ctrl+C
-trap "echo '🛑 Stopping...'; kill $BACKEND_PID $REACT_PID 2>/dev/null; exit 0" INT TERM
+trap "echo '🛑 Stopping...'; kill $BACKEND_PID 2>/dev/null; exit 0" INT TERM
 
 wait
