@@ -750,7 +750,7 @@ def complete_task(project_id: str, task_id: str, agent_id: str, body: Optional[d
     # For code tasks: can optionally create sub_tasks (test, docs, debug, refactor)
     # For debug/refactor: can create sub_tasks too
     # For other tasks: sub_tasks not allowed
-    allowed_subtask_types = ["spec", "code", "debug", "refactor"]
+    allowed_subtask_types = ["spec", "code", "test", "debug", "refactor"]
     if sub_tasks and task_type not in allowed_subtask_types:
         raise HTTPException(
             status_code=400,
@@ -821,8 +821,8 @@ def complete_task(project_id: str, task_id: str, agent_id: str, body: Optional[d
             "progress": 0
         }
         tasks.append(review_task)
-        # For code/debug/refactor: mark as "in_review" until review passes
-        if task["type"] in ["code", "debug", "refactor"]:
+        # For code/test/debug/refactor: mark as "in_review" until review passes
+        if task["type"] in ["code", "test", "debug", "refactor"]:
             task["status"] = "in_review"
             task["progress"] = 90  # Not fully complete yet
         else:
