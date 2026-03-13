@@ -13,7 +13,6 @@ from pathlib import Path
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, HTTPException, UploadFile, File, Query, Body, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import shutil
@@ -24,18 +23,6 @@ DATA_DIR = BASE_DIR / "data"
 SCHEMAS_DIR = BASE_DIR / "schemas"
 
 app = FastAPI(title="Task Pool API")
-
-# Serve static files
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "frontend")), name="static")
-
-@app.get("/frontend/{file_path:path}")
-async def serve_frontend(file_path: str):
-    """Serve frontend files"""
-    file_path = BASE_DIR / "frontend" / file_path
-    if file_path.exists() and file_path.is_file():
-        return FileResponse(file_path)
-    # Serve index.html for SPA
-    return FileResponse(BASE_DIR / "frontend" / "index.html")
 
 app.add_middleware(
     CORSMiddleware,

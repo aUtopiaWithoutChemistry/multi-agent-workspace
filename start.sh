@@ -12,10 +12,8 @@ if ! python3 -c "import fastapi" 2>/dev/null; then
     pip3 install -r requirements.txt
 fi
 
-# Source Rust environment
-if [ -f "$HOME/.cargo/env" ]; then
-    source "$HOME/.cargo/env"
-fi
+# Add Rust to PATH
+export PATH="$HOME/.cargo/bin:$PATH"
 
 # Start backend in background
 echo "🔧 Starting backend API..."
@@ -35,19 +33,31 @@ fi
 echo "✅ Backend running at http://localhost:8765"
 
 # Build and run desktop app
-echo "🖥️ Building & starting Desktop App..."
 cd task-pool-desktop
 
+# Check for existing build
+APP_PATH=""
+if [ -f "src-tauri/target/release/task-pool-desktop" ]; then
+    APP_PATH="src-tauri/target/release/task-pool-desktop"
+elif [ -f "src-tauri/target/debug/task-pool-desktop" ]; then
+    APP_PATH="src-tauri/target/debug/task-pool-desktop"
+fi
+
 # Build if needed
-if [ ! -d "src-tauri/target/release/task-pool-desktop.app" ]; then
-    echo "📦 Building desktop app (first time only)..."
+if [ -z "$APP_PATH" ]; then
+    echo "📦 Building desktop app..."
     npm install
+    cd src-tauri
     cargo build --release
+    cd ..
+    APP_PATH="src-tauri/target/release/task-pool-desktop"
 fi
 
 # Run the app
-open src-tauri/target/release/task-pool-desktop.app 2>/dev/null || \
-    ./src-tauri/target/release/task-pool-desktop &
+echo "🖥️ Starting Desktop App..."
+open "$APP_PATH.app" 2>/dev/null || "$APP_PATH" &
+
+cd "$SCRIPT_DIR"
 
 echo ""
 echo "🎉 Task Pool is ready!"
