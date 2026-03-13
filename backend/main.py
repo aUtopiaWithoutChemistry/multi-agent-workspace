@@ -756,8 +756,10 @@ def complete_task(project_id: str, task_id: str, agent_id: str, body: Optional[d
             status_code=400,
             detail=f"Task type '{task_type}' cannot create sub_tasks. Only {allowed_subtask_types} can create sub-tasks."
         )
-        # Create sub-tasks
-        created_subtasks = []
+
+    # Create sub-tasks if provided
+    created_subtasks = []
+    if sub_tasks:
         for subtask_data in sub_tasks:
             subtask = {
                 "id": str(uuid.uuid4())[:8],
