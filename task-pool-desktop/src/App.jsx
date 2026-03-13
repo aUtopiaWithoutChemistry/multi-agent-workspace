@@ -706,6 +706,17 @@ function App() {
     }
   }, [currentProject?.workspace])
 
+  // Auto-refresh every 5 seconds
+  useEffect(() => {
+    if (!currentProject) return
+
+    const interval = setInterval(() => {
+      loadProjectData(currentProject.id)
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [currentProject?.id])
+
   const loadProjects = async () => {
     const data = await api.getProjects()
     if (data) {
